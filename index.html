@@ -79,30 +79,1440 @@ nav{position:sticky;top:0;z-index:20;background:#080a0ee8;backdrop-filter:blur(1
 <div id="cartPanel" class="cartpanel"><div class="chead"><h3>🛒 Your Cart</h3><button class="btn dark" onclick="toggleCart()">Close</button></div><div id="items"></div><div id="total" class="total">Total: ₹0</div><button class="btn gold full" onclick="checkout()">Place Order</button></div>
 
 <script>
-const products=[{name:"Classic Starter Board",price:2499},{name:"Club Pro Board",price:5999},{name:"Royal Tournament Board",price:12999}],chosen=[0,0,0],cart=[0,0,0],money=n=>"₹"+n.toLocaleString("en-IN");
-function q(i,d){chosen[i]=Math.max(0,chosen[i]+d);document.getElementById("q"+i).textContent=chosen[i]}
-function add(i){if(!chosen[i])chosen[i]=1;cart[i]+=chosen[i];chosen[i]=0;document.getElementById("q"+i).textContent=0;renderCart();document.getElementById("cartPanel").classList.add("show")}
-function renderCart(){let html="",total=0,count=0;cart.forEach((n,i)=>{if(n){let t=n*products[i].price;total+=t;count+=n;html+=`<div class="crow"><span>${products[i].name}<br><small>${n} × ${money(products[i].price)}</small></span><b>${money(t)}</b></div>`}});document.getElementById("items").innerHTML=html||'<div class="empty">Your cart is empty.</div>';document.getElementById("total").textContent="Total: "+money(total);document.getElementById("cartCount").textContent=count}
-function toggleCart(){document.getElementById("cartPanel").classList.toggle("show")}
-function checkout(){let total=cart.reduce((s,n,i)=>s+n*products[i].price,0);if(!total)return alert("Please add a board first.");alert("NQ Royale Carrom\n\nOrder Total: "+money(total)+"\n\nDemo checkout.")}
+/* =========================================================
+   NQ ROYALE CARROM - PROPER 2 PLAYER GAME
+   ========================================================= */
+
+const products = [
+  {name:"Classic Starter Board", price:2499},
+  {name:"Club Pro Board", price:5999},
+  {name:"Royal Tournament Board", price:12999}
+];
+
+const chosen = [0,0,0];
+const cart = [0,0,0];
+
+const money = n => "₹" + n.toLocaleString("en-IN");
+
+function q(i,d){
+  chosen[i] = Math.max(0, chosen[i] + d);
+  document.getElementById("q"+i).textContent = chosen[i];
+}
+
+function add(i){
+  if(!chosen[i]) chosen[i] = 1;
+
+  cart[i] += chosen[i];
+  chosen[i] = 0;
+
+  document.getElementById("q"+i).textContent = 0;
+
+  renderCart();
+  document.getElementById("cartPanel").classList.add("show");
+}
+
+function renderCart(){
+  let html = "";
+  let total = 0;
+  let count = 0;
+
+  cart.forEach((n,i)=>{
+    if(n){
+      const t = n * products[i].price;
+      total += t;
+      count += n;
+
+      html += `
+        <div class="crow">
+          <span>
+            ${products[i].name}<br>
+            <small>${n} × ${money(products[i].price)}</small>
+          </span>
+          <b>${money(t)}</b>
+        </div>
+      `;
+    }
+  });
+
+  document.getElementById("items").innerHTML =
+    html || '<div class="empty">Your cart is empty.</div>';
+
+  document.getElementById("total").textContent =
+    "Total: " + money(total);
+
+  document.getElementById("cartCount").textContent = count;
+}
+
+function toggleCart(){
+  document.getElementById("cartPanel").classList.toggle("show");
+}
+
+function checkout(){
+  const total = cart.reduce(
+    (s,n,i)=>s + n * products[i].price,
+    0
+  );
+
+  if(!total){
+    alert("Please add a board first.");
+    return;
+  }
+
+  alert(
+    "NQ Royale Carrom\n\n" +
+    "Order Total: " + money(total) +
+    "\n\nDemo checkout."
+  );
+}
+
 renderCart();
 
-const c=document.getElementById("board"),ctx=c.getContext("2d"),W=760,H=760,B=58,PR=25;let player=0,score=[0,0],striker,coins=[],drag=false,moving=false,aim={x:0,y:0};
-const baseline=()=>player===0?H-B-35:B+35,clampX=x=>Math.max(B+55,Math.min(W-B-55,x));
-function coin(x,y,color){return{x,y,vx:0,vy:0,r:13,color,active:true}}
-function resetGame(){player=0;score=[0,0];moving=false;drag=false;striker={x:W/2,y:baseline(),vx:0,vy:0,r:19};coins=[coin(W/2,H/2,"queen")];let k=0;for(let ring=1;ring<=2;ring++)for(let i=0;i<6;i++){let a=Math.PI*2*i/6+(ring===2?Math.PI/6:0),r=ring*30;coins.push(coin(W/2+Math.cos(a)*r,H/2+Math.sin(a)*r,k++%2?"white":"black"))}ui();draw()}
-function point(e){let r=c.getBoundingClientRect(),p=e.touches?e.touches[0]:e;return{x:(p.clientX-r.left)*W/r.width,y:(p.clientY-r.top)*H/r.height}}
-function down(e){if(moving)return;e.preventDefault();let p=point(e);if(Math.hypot(p.x-striker.x,p.y-striker.y)<50&&Math.abs(p.y-baseline())<60){drag=true;aim=p}}
-function move(e){if(!drag)return;e.preventDefault();let p=point(e);aim=p;striker.x=clampX(p.x);striker.y=baseline();draw()}
-function up(e){if(!drag)return;e.preventDefault();drag=false;let p=point(e),dx=p.x-striker.x,dy=p.y-striker.y;if(player===0&&dy>=0||player===1&&dy<=0){draw();return}let d=Math.hypot(dx,dy)||1,s=13*(+document.getElementById("power").value/100);striker.vx=dx/d*s;striker.vy=dy/d*s;moving=true;animate()}
-c.addEventListener("mousedown",down);c.addEventListener("mousemove",move);window.addEventListener("mouseup",up);c.addEventListener("touchstart",down,{passive:false});c.addEventListener("touchmove",move,{passive:false});window.addEventListener("touchend",up,{passive:false});
-function physics(){let all=[striker,...coins.filter(x=>x.active)];for(const o of all){o.x+=o.vx;o.y+=o.vy;o.vx*=.985;o.vy*=.985;if(Math.abs(o.vx)<.035)o.vx=0;if(Math.abs(o.vy)<.035)o.vy=0;if(o.x-o.r<B){o.x=B+o.r;o.vx=Math.abs(o.vx)*.88}if(o.x+o.r>W-B){o.x=W-B-o.r;o.vx=-Math.abs(o.vx)*.88}if(o.y-o.r<B){o.y=B+o.r;o.vy=Math.abs(o.vy)*.88}if(o.y+o.r>H-B){o.y=H-B-o.r;o.vy=-Math.abs(o.vy)*.88}}
-for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length;j++){let a=all[i],b=all[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),m=a.r+b.r;if(d>0&&d<m){let nx=dx/d,ny=dy/d,o=(m-d)/2;a.x-=nx*o;a.y-=ny*o;b.x+=nx*o;b.y+=ny*o;let rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(rv<0){a.vx-=rv*nx;a.vy-=rv*ny;b.vx+=rv*nx;b.vy+=rv*ny}}}
-const ps=[[B,B],[W-B,B],[B,H-B],[W-B,H-B]];for(const x of coins)if(x.active)for(const p of ps)if(Math.hypot(x.x-p[0],x.y-p[1])<PR+5){x.active=false;score[player]++}for(const p of ps)if(Math.hypot(striker.x-p[0],striker.y-p[1])<PR+5){striker.x=W/2;striker.y=baseline();striker.vx=striker.vy=0;player=1-player;moving=false;ui();return}if(striker.vx===0&&striker.vy===0){striker.x=clampX(striker.x);striker.y=baseline();player=1-player;moving=false;ui()}}
-function animate(){if(!moving)return draw();physics();draw();if(moving)requestAnimationFrame(animate)}
-function ui(){document.getElementById("turn").textContent=player?"Top Player's Turn":"Bottom Player's Turn";document.getElementById("score").textContent=`Bottom: ${score[0]} • Top: ${score[1]}`;document.getElementById("powerText").textContent=document.getElementById("power").value+"%"}
-document.getElementById("power").addEventListener("input",ui);
-function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle="#925720";ctx.fillRect(0,0,W,H);ctx.fillStyle="#d4a15c";ctx.fillRect(B,B,W-B*2,H-B*2);ctx.strokeStyle="#704018";ctx.lineWidth=3;ctx.strokeRect(B+22,B+22,W-B*2-44,H-B*2-44);const ps=[[B,B],[W-B,B],[B,H-B],[W-B,H-B]];for(const p of ps){ctx.beginPath();ctx.fillStyle="#151515";ctx.arc(p[0],p[1],PR,0,Math.PI*2);ctx.fill()}ctx.strokeStyle="#71421e";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(B+70,H-B-65);ctx.lineTo(W-B-70,H-B-65);ctx.moveTo(B+70,H-B-20);ctx.lineTo(W-B-70,H-B-20);ctx.moveTo(B+70,B+20);ctx.lineTo(W-B-70,B+20);ctx.moveTo(B+70,B+65);ctx.lineTo(W-B-70,B+65);ctx.stroke();ctx.beginPath();ctx.lineWidth=3;ctx.arc(W/2,H/2,45,0,Math.PI*2);ctx.stroke();for(const x of coins)if(x.active){ctx.beginPath();ctx.fillStyle=x.color==="queen"?"#c83f3f":x.color==="black"?"#202020":"#f5ead7";ctx.arc(x.x,x.y,x.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#5a381a";ctx.stroke()}ctx.beginPath();ctx.fillStyle="#f0dfbc";ctx.arc(striker.x,striker.y,striker.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#6c461f";ctx.lineWidth=4;ctx.stroke();if(drag){ctx.beginPath();ctx.strokeStyle="#704018";ctx.lineWidth=3;ctx.moveTo(striker.x,striker.y);ctx.lineTo(aim.x,aim.y);ctx.stroke()}ctx.fillStyle="#593719";ctx.font="bold 14px Arial";ctx.textAlign="center";ctx.fillText("LEGAL BASELINE",W/2,player?B+85:H-B-80)}
+
+/* =========================================================
+   CARROM GAME
+   ========================================================= */
+
+const canvas = document.getElementById("board");
+const ctx = canvas.getContext("2d");
+
+const W = canvas.width;
+const H = canvas.height;
+
+const BOARD = 58;
+const POCKET_R = 27;
+
+const COIN_R = 13;
+const STRIKER_R = 19;
+
+const FRICTION = 0.985;
+const MIN_SPEED = 0.035;
+const MAX_POWER = 18;
+
+let player = 0; // 0 = bottom / white, 1 = top / black
+
+let scores = [0,0];
+
+let coins = [];
+let striker = null;
+
+let draggingStriker = false;
+let shooting = false;
+
+let aim = {
+  x: W/2,
+  y: H/2
+};
+
+let queenPocketed = false;
+let queenCoveredBy = null;
+
+let turnPocketedOwn = false;
+let foulMessage = "";
+
+let gameOver = false;
+
+
+/* ---------------------------------------------------------
+   PLAYER COLORS
+   --------------------------------------------------------- */
+
+const PLAYER_NAMES = [
+  "Bottom Player",
+  "Top Player"
+];
+
+const PLAYER_COLORS = [
+  "white",
+  "black"
+];
+
+
+/* ---------------------------------------------------------
+   BOARD GEOMETRY
+   --------------------------------------------------------- */
+
+function baselineY(){
+  return player === 0
+    ? H - BOARD - 45
+    : BOARD + 45;
+}
+
+function clampStrikerX(x){
+  return Math.max(
+    BOARD + 105,
+    Math.min(W - BOARD - 105, x)
+  );
+}
+
+
+/* ---------------------------------------------------------
+   CREATE COINS
+   --------------------------------------------------------- */
+
+function createCoin(x,y,color){
+  return {
+    x,
+    y,
+    vx: 0,
+    vy: 0,
+    r: COIN_R,
+    color,
+    active: true
+  };
+}
+
+function createStriker(){
+  return {
+    x: W/2,
+    y: baselineY(),
+    vx: 0,
+    vy: 0,
+    r: STRIKER_R
+  };
+}
+
+
+/*
+   Standard arrangement:
+
+   9 white
+   9 black
+   1 queen
+*/
+
+function setupCoins(){
+
+  coins = [];
+
+  const cx = W/2;
+  const cy = H/2;
+
+  const spacing = 28;
+
+  /*
+     Queen
+  */
+  coins.push(
+    createCoin(cx, cy, "queen")
+  );
+
+  /*
+     Inner ring: 6
+  */
+  for(let i=0;i<6;i++){
+
+    const angle =
+      (Math.PI * 2 * i) / 6;
+
+    coins.push(
+      createCoin(
+        cx + Math.cos(angle) * spacing,
+        cy + Math.sin(angle) * spacing,
+        i % 2 === 0 ? "white" : "black"
+      )
+    );
+  }
+
+  /*
+     Outer ring: 12
+  */
+  for(let i=0;i<12;i++){
+
+    const angle =
+      (Math.PI * 2 * i) / 12;
+
+    coins.push(
+      createCoin(
+        cx + Math.cos(angle) * spacing * 2,
+        cy + Math.sin(angle) * spacing * 2,
+        i % 2 === 0 ? "black" : "white"
+      )
+    );
+  }
+
+  /*
+     We now have:
+     Queen + 9 white + 9 black
+  */
+}
+
+
+/* ---------------------------------------------------------
+   RESET GAME
+   --------------------------------------------------------- */
+
+function resetGame(){
+
+  player = 0;
+
+  scores = [0,0];
+
+  queenPocketed = false;
+  queenCoveredBy = null;
+
+  turnPocketedOwn = false;
+
+  foulMessage = "";
+
+  gameOver = false;
+
+  shooting = false;
+  draggingStriker = false;
+
+  setupCoins();
+
+  striker = createStriker();
+
+  updateUI();
+  draw();
+}
+
+
+/* ---------------------------------------------------------
+   INPUT COORDINATES
+   --------------------------------------------------------- */
+
+function getPoint(e){
+
+  const rect =
+    canvas.getBoundingClientRect();
+
+  const p =
+    e.touches ? e.touches[0] : e;
+
+  return {
+    x: (p.clientX - rect.left) *
+       W / rect.width,
+
+    y: (p.clientY - rect.top) *
+       H / rect.height
+  };
+}
+
+
+/* ---------------------------------------------------------
+   START DRAG
+   --------------------------------------------------------- */
+
+function pointerDown(e){
+
+  if(gameOver || shooting) return;
+
+  e.preventDefault();
+
+  const p = getPoint(e);
+
+  const distance =
+    Math.hypot(
+      p.x - striker.x,
+      p.y - striker.y
+    );
+
+  /*
+     Only grab striker if it is close.
+  */
+  if(
+    distance < 45 &&
+    Math.abs(p.y - baselineY()) < 40
+  ){
+    draggingStriker = true;
+    aim.x = p.x;
+    aim.y = p.y;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   MOVE STRIKER
+   --------------------------------------------------------- */
+
+function pointerMove(e){
+
+  if(!draggingStriker || shooting) return;
+
+  e.preventDefault();
+
+  const p = getPoint(e);
+
+  striker.x = clampStrikerX(p.x);
+  striker.y = baselineY();
+
+  aim.x = p.x;
+  aim.y = p.y;
+
+  draw();
+}
+
+
+/* ---------------------------------------------------------
+   RELEASE / SHOOT
+   --------------------------------------------------------- */
+
+function pointerUp(e){
+
+  if(!draggingStriker || shooting) return;
+
+  e.preventDefault();
+
+  draggingStriker = false;
+
+  const p = getPoint(e);
+
+  /*
+     Drag backward to shoot.
+
+     Bottom player:
+       pull downward, shot travels upward.
+
+     Top player:
+       pull upward, shot travels downward.
+  */
+
+  let dx = p.x - striker.x;
+  let dy = p.y - striker.y;
+
+  const legalDirection =
+    player === 0
+      ? dy > 0
+      : dy < 0;
+
+  /*
+     Reject forward shot.
+  */
+  if(!legalDirection){
+
+    foulMessage =
+      "Illegal shot: pull the striker backward.";
+
+    updateUI();
+    draw();
+
+    return;
+  }
+
+  const distance =
+    Math.hypot(dx,dy);
+
+  if(distance < 8){
+    return;
+  }
+
+  const power =
+    Number(
+      document.getElementById("power").value
+    ) / 100;
+
+  /*
+     Convert drag distance + power
+     into velocity.
+  */
+
+  const strength =
+    Math.min(
+      MAX_POWER,
+      Math.max(
+        5,
+        distance * 0.18
+      )
+    ) * power;
+
+  dx /= distance;
+  dy /= distance;
+
+  striker.vx = dx * strength;
+  striker.vy = dy * strength;
+
+  foulMessage = "";
+
+  turnPocketedOwn = false;
+
+  shooting = true;
+
+  animate();
+}
+
+
+/* ---------------------------------------------------------
+   EVENTS
+   --------------------------------------------------------- */
+
+canvas.addEventListener(
+  "mousedown",
+  pointerDown
+);
+
+canvas.addEventListener(
+  "mousemove",
+  pointerMove
+);
+
+window.addEventListener(
+  "mouseup",
+  pointerUp
+);
+
+canvas.addEventListener(
+  "touchstart",
+  pointerDown,
+  {passive:false}
+);
+
+canvas.addEventListener(
+  "touchmove",
+  pointerMove,
+  {passive:false}
+);
+
+window.addEventListener(
+  "touchend",
+  pointerUp,
+  {passive:false}
+);
+
+
+/* ---------------------------------------------------------
+   POCKETS
+   --------------------------------------------------------- */
+
+function getPockets(){
+
+  return [
+    [BOARD,BOARD],
+    [W-BOARD,BOARD],
+    [BOARD,H-BOARD],
+    [W-BOARD,H-BOARD]
+  ];
+}
+
+
+function isInPocket(obj){
+
+  for(const [px,py] of getPockets()){
+
+    if(
+      Math.hypot(
+        obj.x-px,
+        obj.y-py
+      ) < POCKET_R
+    ){
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+/* ---------------------------------------------------------
+   HANDLE COIN POCKET
+   --------------------------------------------------------- */
+
+function pocketCoin(coin){
+
+  coin.active = false;
+
+  /*
+     Queen
+  */
+  if(coin.color === "queen"){
+
+    queenPocketed = true;
+
+    /*
+       Queen must be covered by
+       player's own coin.
+    */
+    return;
+  }
+
+  /*
+     Own coin
+  */
+  if(coin.color === PLAYER_COLORS[player]){
+
+    scores[player]++;
+
+    turnPocketedOwn = true;
+
+  }else{
+
+    /*
+       Opponent coin:
+       remove it from board, but
+       don't give player a point.
+    */
+  }
+}
+
+
+/* ---------------------------------------------------------
+   STRIKER FOUL
+   --------------------------------------------------------- */
+
+function strikerFoul(){
+
+  foulMessage =
+    "Foul: striker pocketed.";
+
+  /*
+     One own coin is returned if possible.
+     This mimics a basic carrom penalty.
+  */
+
+  const own = coins.find(
+    c =>
+      !c.active &&
+      c.color === PLAYER_COLORS[player]
+  );
+
+  if(own){
+
+    own.active = true;
+    own.x = W/2;
+    own.y = H/2 + (Math.random()-0.5)*80;
+    own.vx = 0;
+    own.vy = 0;
+
+    scores[player] =
+      Math.max(0,scores[player]-1);
+  }
+
+  striker = createStriker();
+
+  shooting = false;
+
+  player = 1-player;
+
+  updateUI();
+}
+
+
+/* ---------------------------------------------------------
+   COIN COLLISION
+   --------------------------------------------------------- */
+
+function collideObjects(a,b){
+
+  const dx = b.x-a.x;
+  const dy = b.y-a.y;
+
+  const distance =
+    Math.hypot(dx,dy);
+
+  const minDistance =
+    a.r+b.r;
+
+  if(
+    distance <= 0 ||
+    distance >= minDistance
+  ){
+    return;
+  }
+
+  const nx = dx/distance;
+  const ny = dy/distance;
+
+  /*
+     Separate overlapping objects.
+  */
+
+  const overlap =
+    (minDistance-distance)/2;
+
+  a.x -= nx*overlap;
+  a.y -= ny*overlap;
+
+  b.x += nx*overlap;
+  b.y += ny*overlap;
+
+  /*
+     Relative velocity.
+  */
+
+  const relativeVelocity =
+    (b.vx-a.vx)*nx +
+    (b.vy-a.vy)*ny;
+
+  if(relativeVelocity > 0) return;
+
+  /*
+     Elastic collision.
+  */
+
+  const impulse =
+    -relativeVelocity * 0.92;
+
+  a.vx -= impulse*nx;
+  a.vy -= impulse*ny;
+
+  b.vx += impulse*nx;
+  b.vy += impulse*ny;
+}
+
+
+/* ---------------------------------------------------------
+   WALL COLLISION
+   --------------------------------------------------------- */
+
+function wallCollision(o){
+
+  /*
+     Left
+  */
+  if(o.x-o.r < BOARD){
+
+    o.x = BOARD+o.r;
+    o.vx = Math.abs(o.vx)*0.88;
+  }
+
+  /*
+     Right
+  */
+  if(o.x+o.r > W-BOARD){
+
+    o.x = W-BOARD-o.r;
+    o.vx = -Math.abs(o.vx)*0.88;
+  }
+
+  /*
+     Top
+  */
+  if(o.y-o.r < BOARD){
+
+    o.y = BOARD+o.r;
+    o.vy = Math.abs(o.vy)*0.88;
+  }
+
+  /*
+     Bottom
+  */
+  if(o.y+o.r > H-BOARD){
+
+    o.y = H-BOARD-o.r;
+    o.vy = -Math.abs(o.vy)*0.88;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   PHYSICS
+   --------------------------------------------------------- */
+
+function physics(){
+
+  const objects = [
+    striker,
+    ...coins.filter(c=>c.active)
+  ];
+
+  /*
+     Move
+  */
+
+  for(const o of objects){
+
+    o.x += o.vx;
+    o.y += o.vy;
+
+    o.vx *= FRICTION;
+    o.vy *= FRICTION;
+
+    if(Math.abs(o.vx)<MIN_SPEED)
+      o.vx = 0;
+
+    if(Math.abs(o.vy)<MIN_SPEED)
+      o.vy = 0;
+
+    /*
+       Check pockets before wall bounce.
+    */
+
+    if(
+      o !== striker &&
+      isInPocket(o)
+    ){
+
+      pocketCoin(o);
+      continue;
+    }
+
+    if(
+      o === striker &&
+      isInPocket(o)
+    ){
+
+      strikerFoul();
+      return;
+    }
+
+    wallCollision(o);
+  }
+
+  /*
+     Coin / striker collisions.
+  */
+
+  const active =
+    coins.filter(c=>c.active);
+
+  for(let i=0;i<active.length;i++){
+
+    for(let j=i+1;j<active.length;j++){
+
+      collideObjects(
+        active[i],
+        active[j]
+      );
+    }
+
+    collideObjects(
+      striker,
+      active[i]
+    );
+  }
+}
+
+
+/* ---------------------------------------------------------
+   CHECK ALL OBJECTS STOPPED
+   --------------------------------------------------------- */
+
+function allStopped(){
+
+  if(
+    Math.abs(striker.vx)>0 ||
+    Math.abs(striker.vy)>0
+  ){
+    return false;
+  }
+
+  return coins.every(c =>
+    !c.active ||
+    (
+      Math.abs(c.vx)===0 &&
+      Math.abs(c.vy)===0
+    )
+  );
+}
+
+
+/* ---------------------------------------------------------
+   END OF TURN
+   --------------------------------------------------------- */
+
+function finishTurn(){
+
+  /*
+     If queen was pocketed during this
+     turn, it must be covered by an
+     own coin.
+  */
+
+  if(queenPocketed && queenCoveredBy === null){
+
+    if(turnPocketedOwn){
+
+      queenCoveredBy = player;
+
+      foulMessage =
+        "Queen covered!";
+    }else{
+
+      /*
+         Return queen to center.
+      */
+
+      const queen =
+        coins.find(c=>c.color==="queen");
+
+      if(queen){
+
+        queen.active = true;
+
+        queen.x = W/2;
+        queen.y = H/2;
+
+        queen.vx = 0;
+        queen.vy = 0;
+      }
+
+      queenPocketed = false;
+
+      foulMessage =
+        "Queen returned — it must be covered.";
+    }
+  }
+
+  /*
+     Win condition.
+
+     Player must clear all own coins
+     and have covered queen.
+  */
+
+  const remainingOwn =
+    coins.filter(
+      c =>
+        c.active &&
+        c.color === PLAYER_COLORS[player]
+    ).length;
+
+  if(
+    remainingOwn === 0 &&
+    queenCoveredBy === player
+  ){
+
+    gameOver = true;
+    shooting = false;
+
+    foulMessage =
+      PLAYER_NAMES[player] +
+      " wins the game!";
+
+    updateUI();
+    draw();
+
+    return;
+  }
+
+  /*
+     Continue turn if player pocketed
+     one of their own coins.
+
+     Otherwise switch player.
+  */
+
+  if(!turnPocketedOwn){
+
+    player = 1-player;
+  }
+
+  striker = createStriker();
+
+  shooting = false;
+
+  turnPocketedOwn = false;
+
+  updateUI();
+  draw();
+}
+
+
+/* ---------------------------------------------------------
+   ANIMATION
+   --------------------------------------------------------- */
+
+function animate(){
+
+  if(!shooting){
+
+    draw();
+    return;
+  }
+
+  physics();
+
+  draw();
+
+  if(
+    shooting &&
+    allStopped()
+  ){
+
+    finishTurn();
+    return;
+  }
+
+  if(shooting){
+
+    requestAnimationFrame(
+      animate
+    );
+  }
+}
+
+
+/* ---------------------------------------------------------
+   UI
+   --------------------------------------------------------- */
+
+function updateUI(){
+
+  document.getElementById("turn").textContent =
+    gameOver
+      ? "GAME OVER"
+      : PLAYER_NAMES[player] + "'s Turn";
+
+  document.getElementById("score").textContent =
+    "Bottom: " +
+    scores[0] +
+    " • Top: " +
+    scores[1];
+
+  document.getElementById("powerText").textContent =
+    document.getElementById("power").value +
+    "%";
+
+  /*
+     Display game state message.
+  */
+
+  const rule =
+    document.querySelector(".rule");
+
+  if(rule){
+
+    if(gameOver){
+
+      rule.innerHTML =
+        "<b>GAME OVER</b><br><br>" +
+        foulMessage;
+
+    }else if(foulMessage){
+
+      rule.innerHTML =
+        "<b>Game Status</b><br><br>" +
+        foulMessage +
+        "<br><br>" +
+        "Pull the striker backward from " +
+        "your baseline to shoot.";
+
+    }else{
+
+      rule.innerHTML =
+        "<b>How to Play</b><br><br>" +
+        "Drag the striker left/right on your " +
+        "baseline. Pull backward and release " +
+        "to shoot.<br><br>" +
+        "Pocket your own coins to continue your " +
+        "turn. Pocket the queen and cover it with " +
+        "your own coin.<br><br>" +
+        "Clear all your coins after covering the " +
+        "queen to win.";
+    }
+  }
+}
+
+
+/* ---------------------------------------------------------
+   POWER
+   --------------------------------------------------------- */
+
+document
+  .getElementById("power")
+  .addEventListener(
+    "input",
+    updateUI
+  );
+
+
+/* ---------------------------------------------------------
+   DRAW BOARD
+   --------------------------------------------------------- */
+
+function draw(){
+
+  ctx.clearRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+  /*
+     Wooden outer board
+  */
+
+  ctx.fillStyle = "#8f5425";
+
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+  /*
+     Inner wood
+  */
+
+  ctx.fillStyle = "#d4a15c";
+
+  ctx.fillRect(
+    BOARD,
+    BOARD,
+    W-BOARD*2,
+    H-BOARD*2
+  );
+
+  /*
+     Decorative border
+  */
+
+  ctx.strokeStyle = "#704018";
+  ctx.lineWidth = 4;
+
+  ctx.strokeRect(
+    BOARD+22,
+    BOARD+22,
+    W-BOARD*2-44,
+    H-BOARD*2-44
+  );
+
+
+  /* -------------------------------------------------------
+     POCKETS
+     ------------------------------------------------------- */
+
+  for(const [x,y] of getPockets()){
+
+    ctx.beginPath();
+
+    ctx.fillStyle = "#111";
+
+    ctx.arc(
+      x,
+      y,
+      POCKET_R,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.strokeStyle = "#4c2b12";
+    ctx.lineWidth = 5;
+
+    ctx.stroke();
+  }
+
+
+  /* -------------------------------------------------------
+     BASELINES
+     ------------------------------------------------------- */
+
+  ctx.strokeStyle = "#713f1c";
+  ctx.lineWidth = 4;
+
+  /*
+     Bottom baseline
+  */
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    BOARD+75,
+    H-BOARD-65
+  );
+
+  ctx.lineTo(
+    W-BOARD-75,
+    H-BOARD-65
+  );
+
+  ctx.moveTo(
+    BOARD+75,
+    H-BOARD-20
+  );
+
+  ctx.lineTo(
+    W-BOARD-75,
+    H-BOARD-20
+  );
+
+  /*
+     Top baseline
+  */
+
+  ctx.moveTo(
+    BOARD+75,
+    BOARD+65
+  );
+
+  ctx.lineTo(
+    W-BOARD-75,
+    BOARD+65
+  );
+
+  ctx.moveTo(
+    BOARD+75,
+    BOARD+20
+  );
+
+  ctx.lineTo(
+    W-BOARD-75,
+    BOARD+20
+  );
+
+  ctx.stroke();
+
+
+  /*
+     Baseline circles
+  */
+
+  const by = baselineY();
+
+  for(const x of [
+    BOARD+75,
+    W-BOARD-75
+  ]){
+
+    ctx.beginPath();
+
+    ctx.fillStyle = "#a86e35";
+
+    ctx.arc(
+      x,
+      by,
+      9,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.strokeStyle = "#713f1c";
+    ctx.stroke();
+  }
+
+
+  /* -------------------------------------------------------
+     CENTER CIRCLE
+     ------------------------------------------------------- */
+
+  ctx.beginPath();
+
+  ctx.strokeStyle = "#713f1c";
+  ctx.lineWidth = 4;
+
+  ctx.arc(
+    W/2,
+    H/2,
+    48,
+    0,
+    Math.PI*2
+  );
+
+  ctx.stroke();
+
+  ctx.beginPath();
+
+  ctx.arc(
+    W/2,
+    H/2,
+    8,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fillStyle = "#713f1c";
+
+  ctx.fill();
+
+
+  /* -------------------------------------------------------
+     COINS
+     ------------------------------------------------------- */
+
+  for(const coin of coins){
+
+    if(!coin.active) continue;
+
+    ctx.beginPath();
+
+    if(coin.color === "queen"){
+
+      ctx.fillStyle = "#c83f3f";
+
+    }else if(coin.color === "black"){
+
+      ctx.fillStyle = "#1c1c1c";
+
+    }else{
+
+      ctx.fillStyle = "#f5ead7";
+    }
+
+    ctx.arc(
+      coin.x,
+      coin.y,
+      coin.r,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.strokeStyle = "#5a381a";
+    ctx.lineWidth = 2;
+
+    ctx.stroke();
+
+    /*
+       Queen center decoration
+    */
+
+    if(coin.color === "queen"){
+
+      ctx.beginPath();
+
+      ctx.fillStyle = "#f5c8c8";
+
+      ctx.arc(
+        coin.x,
+        coin.y,
+        4,
+        0,
+        Math.PI*2
+      );
+
+      ctx.fill();
+    }
+  }
+
+
+  /* -------------------------------------------------------
+     STRIKER
+     ------------------------------------------------------- */
+
+  ctx.beginPath();
+
+  ctx.fillStyle = "#f0dfbc";
+
+  ctx.arc(
+    striker.x,
+    striker.y,
+    striker.r,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+  ctx.strokeStyle = "#5b391b";
+  ctx.lineWidth = 4;
+
+  ctx.stroke();
+
+  /*
+     Striker center
+  */
+
+  ctx.beginPath();
+
+  ctx.fillStyle = "#9c652c";
+
+  ctx.arc(
+    striker.x,
+    striker.y,
+    5,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  /* -------------------------------------------------------
+     AIM LINE
+     ------------------------------------------------------- */
+
+  if(
+    draggingStriker &&
+    !shooting
+  ){
+
+    ctx.beginPath();
+
+    ctx.strokeStyle = "#8a551f";
+    ctx.lineWidth = 3;
+
+    ctx.setLineDash([8,8]);
+
+    ctx.moveTo(
+      striker.x,
+      striker.y
+    );
+
+    ctx.lineTo(
+      aim.x,
+      aim.y
+    );
+
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    /*
+       Direction arrow
+    */
+
+    const dx =
+      striker.x-aim.x;
+
+    const dy =
+      striker.y-aim.y;
+
+    const len =
+      Math.hypot(dx,dy);
+
+    if(len>5){
+
+      const nx = dx/len;
+      const ny = dy/len;
+
+      const arrowX =
+        striker.x + nx*55;
+
+      const arrowY =
+        striker.y + ny*55;
+
+      ctx.beginPath();
+
+      ctx.strokeStyle = "#e8b83f";
+      ctx.lineWidth = 4;
+
+      ctx.moveTo(
+        striker.x,
+        striker.y
+      );
+
+      ctx.lineTo(
+        arrowX,
+        arrowY
+      );
+
+      ctx.stroke();
+    }
+  }
+
+
+  /* -------------------------------------------------------
+     BASELINE LABEL
+     ------------------------------------------------------- */
+
+  ctx.fillStyle = "#593719";
+
+  ctx.font =
+    "bold 13px Arial";
+
+  ctx.textAlign = "center";
+
+  ctx.fillText(
+    "LEGAL BASELINE",
+    W/2,
+    player === 0
+      ? H-BOARD-80
+      : BOARD+85
+  );
+}
+
+
+/* ---------------------------------------------------------
+   START
+   --------------------------------------------------------- */
+
 resetGame();
 </script>
 </body>
