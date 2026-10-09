@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NQ Royale Carrom | Nawaz Qureshi</title>
-<style>
-:root{--bg:#07090d;--panel:#111720;--gold:#e8b83f;--gold2:#ffd86a;--muted:#aab1bd;--line:#3a2d19}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 50% -10%,#33250e,#07090d 44%);color:#fff;font:15px Arial,Helvetica,sans-serif}button{font:inherit}.wrap{width:min(1180px,92%);margin:auto}
-nav{position:sticky;top:0;z-index:20;background:#080a0ee8;backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}.nav{height:72px;display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:1px}.brand-mark{width:45px;height:45px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#ffe080,#9a641d);color:#171008;font-weight:1000;font-size:13px;border:1px solid #f4c957}.links{display:flex;gap:25px}.links a{color:#cbd0d8;text-decoration:none}.links a:hover{color:var(--gold2)}.cart{background:#1b160c;border:1px solid #765a20;color:var(--gold2);padding:10px 15px;border-radius:10px;font-weight:800;cursor:pointer}
-.hero{padding:38px 0}.hero-card{position:relative;overflow:hidden;border-radius:22px;border:1px solid #5b4520;box-shadow:0 25px 80px #0009;background:#16100a}.hero-card img{width:100%;height:520px;display:block;object-fit:contain;background:#17110a}.hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,#050505c9 0%,#05050550 48%,transparent 75%);display:flex;align-items:center}.hero-copy{padding:50px;max-width:620px}.eyebrow{color:var(--gold2);font-weight:900;letter-spacing:3px;font-size:12px}.hero-copy h1{font-size:clamp(42px,7vw,78px);margin:12px 0;line-height:.95}.hero-copy p{color:#d2d5db;line-height:1.7;max-width:540px}.section{padding:70px 0}.title{text-align:center;font-size:clamp(30px,4vw,42px);margin:0 0 10px}.sub{text-align:center;color:var(--muted);line-height:1.6;margin:0 auto 30px;max-width:760px}
-.gamegrid{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:20px}.card{background:linear-gradient(145deg,#141a23,#0c1017);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 20px 60px #0007}#board{width:100%;display:block;border-radius:14px;background:#c28a45;touch-action:none;cursor:crosshair}.side{display:grid;gap:14px;align-content:start}.box{background:#0b1016;border:1px solid #303846;border-radius:12px;padding:14px}.box strong{display:block;color:var(--gold2);margin-bottom:6px}.rule{background:#191307;border:1px solid #6b501d;border-radius:12px;padding:14px;color:#ead59c;line-height:1.55;font-size:13px}.btn{border:0;border-radius:11px;padding:12px 16px;font-weight:900;cursor:pointer}.gold{background:linear-gradient(135deg,#ffdc69,#bd7c21);color:#171008}.dark{background:#171e28;color:#fff;border:1px solid #3b4654}.full{width:100%}
-.products{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.product{overflow:hidden;background:linear-gradient(145deg,#141a23,#0d1118);border:1px solid var(--line);border-radius:19px;box-shadow:0 18px 55px #0006}.pimg{height:230px;overflow:hidden;position:relative;background:#15110b}.pimg img{width:100%;height:100%;object-fit:contain;background:#15110b;padding:8px}.badge{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#0b0d0dcc;border:1px solid #96702d;color:var(--gold2);border-radius:20px;padding:7px 12px;font-size:10px;font-weight:900;letter-spacing:1.5px}.pbody{padding:18px}.tag{color:#6ed9a5;font-size:11px;font-weight:900}.pbody h3{font-size:20px;margin:8px 0}.desc{color:var(--muted);line-height:1.55}.price{font-size:26px;color:var(--gold2);font-weight:900;margin:12px 0}.qty{display:flex;gap:9px;align-items:center;margin:12px 0}.qty button{width:35px;height:35px;border-radius:8px;background:#171e28;color:#fff;border:1px solid #3b4654;cursor:pointer}.qty span{min-width:22px;text-align:center;font-weight:900}
-.attribution{font-size:11px;color:#7f8793;margin-top:12px;text-align:center}.attribution a{color:#aab1bd}.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.feature-img{width:100%;height:390px;object-fit:contain;background:#15110b;border-radius:20px;border:1px solid #4a391d;display:block}
-.cartpanel{position:fixed;right:20px;bottom:20px;width:min(400px,calc(100% - 40px));background:#111720;border:1px solid #655020;border-radius:18px;padding:18px;z-index:50;box-shadow:0 30px 90px #000c;display:none}.cartpanel.show{display:block}.chead{display:flex;justify-content:space-between;align-items:center}.crow{display:flex;justify-content:space-between;gap:15px;padding:12px 0;border-bottom:1px solid #2b3340}.crow small{color:#939baa}.total{color:var(--gold2);font-size:20px;font-weight:900;padding:14px 0}.empty{color:#9299a5;padding:18px 0}footer{border-top:1px solid #292a2d;text-align:center;padding:30px;color:#8f97a3}.goldtext{color:var(--gold2)}
-@media(max-width:850px){.links{display:none}.gamegrid,.products,.feature-grid{grid-template-columns:1fr}.hero-card img{height:430px}.hero-copy{padding:30px}.hero-copy h1{font-size:46px}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-W4RKTJ5317"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag('js', new Date());
+    gtag('config', 'G-W4RKTJ5317');
+  </script>
+
+  <title>NQ Royale Carrom</title>
 </head>
 <body>
 <nav><div class="wrap nav">
